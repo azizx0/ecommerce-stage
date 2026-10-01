@@ -1,0 +1,55 @@
+<nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+  
+        <a routerLink="/" class="flex items-center gap-2 font-bold text-xl text-gray-900">
+          <span class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white text-sm">E</span>
+          Shop
+        </a>
+  
+        <div class="hidden md:flex items-center gap-8">
+          <a routerLink="/" routerLinkActive="text-blue-600" [routerLinkActiveOptions]="{exact: true}"
+             class="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
+            Catalogue
+          </a>
+          @if (authService.isLoggedIn()) {
+            <a routerLink="/orders" routerLinkActive="text-blue-600"
+               class="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
+              Mes commandes
+            </a>
+          }
+        </div>
+  
+        <div class="flex items-center gap-4">
+          <a routerLink="/cart" class="relative p-2 text-gray-700 hover:text-blue-600 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+            </svg>
+            @if (cartService.totalItems() > 0) {
+              <span class="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {{ cartService.totalItems() }}
+              </span>
+            }
+          </a>
+  
+          @if (authService.isLoggedIn()) {
+            <div class="flex items-center gap-3">
+              <span class="text-sm text-gray-700 hidden sm:block">
+                {{ authService.currentUser()?.firstName }}
+              </span>
+              <button (click)="logout()"
+                      class="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors">
+                Déconnexion
+              </button>
+            </div>
+          } @else {
+            <a routerLink="/login"
+               class="text-sm font-medium px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors">
+              Connexion
+            </a>
+          }
+        </div>
+  
+      </div>
+    </div>
+  </nav>
