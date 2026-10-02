@@ -1,1 +1,114 @@
-<p>cart works!</p>
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <h1 class="text-3xl font-bold text-gray-900 mb-10">Mon panier</h1>
+  
+    @if (success()) {
+      <div class="bg-green-50 border border-green-200 text-green-700 rounded-xl p-6 text-center">
+        <p class="font-medium">✓ Commande passée avec succès !</p>
+        <p class="text-sm mt-1">Redirection vers vos commandes...</p>
+      </div>
+    } @else if (cartService.items().length === 0) {
+      <div class="text-center py-20">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+        </svg>
+        <p class="text-gray-500 mb-4">Votre panier est vide</p>
+        <a routerLink="/" class="text-blue-600 font-medium hover:underline">Voir le catalogue</a>
+      </div>
+    } @else {
+  
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  
+        <div class="lg:col-span-2 space-y-4">
+          @for (item of cartService.items(); track item.product.id) {
+            <div class="flex items-center gap-4 bg-white border border-gray-200 rounded-xl p-4">
+  
+              <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                @if (item.product.imageUrl) {
+                  <img [src]="item.product.imageUrl" [alt]="item.product.name" class="w-full h-full object-cover">
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                  </svg>
+                }
+              </div>
+  
+              <div class="flex-1 min-w-0">
+                <h3 class="font-medium text-gray-900 truncate">{{ item.product.name }}</h3>
+                <p class="text-sm text-gray-500">{{ item.product.price | number:'1.2-2' }} DT</p>
+              </div>
+  
+              <div class="flex items-center border border-gray-300 rounded-lg">
+                <button (click)="decrement(item.product.id, item.quantity)"
+                        class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors rounded-l-lg">−</button>
+                <span class="w-10 text-center text-sm font-medium">{{ item.quantity }}</span>
+                <button (click)="increment(item.product.id, item.quantity)"
+                        class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors rounded-r-lg">+</button>
+              </div>
+  
+              <span class="font-semibold text-gray-900 w-24 text-right">
+                {{ (item.product.price * item.quantity) | number:'1.2-2' }} DT
+              </span>
+  
+              <button (click)="remove(item.product.id)" class="text-gray-400 hover:text-red-500 transition-colors p-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+  
+            </div>
+          }
+        </div>
+  
+        <div class="bg-white border border-gray-200 rounded-xl p-6 h-fit space-y-6">
+          <div>
+            <div class="flex justify-between text-sm text-gray-600 mb-2">
+              <span>Sous-total ({{ cartService.totalItems() }} articles)</span>
+              <span>{{ cartService.totalPrice() | number:'1.2-2' }} DT</span>
+            </div>
+            <div class="flex justify-between font-bold text-gray-900 text-lg pt-3 border-t border-gray-100">
+              <span>Total</span>
+              <span>{{ cartService.totalPrice() | number:'1.2-2' }} DT</span>
+            </div>
+          </div>
+  
+          @if (authService.isLoggedIn()) {
+            <form [formGroup]="form" (ngSubmit)="placeOrder()" class="space-y-4">
+  
+              @if (error()) {
+                <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-4 py-3">
+                  {{ error() }}
+                </div>
+              }
+  
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Adresse de livraison</label>
+                <textarea formControlName="shippingAddress" rows="3"
+                          class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                          placeholder="123 Rue de la Liberté, Tunis"></textarea>
+              </div>
+  
+              <button type="submit" [disabled]="loading()"
+                      class="w-full bg-gray-900 text-white font-medium py-3 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50">
+                @if (loading()) {
+                  Validation en cours...
+                } @else {
+                  Passer la commande
+                }
+              </button>
+            </form>
+          } @else {
+            <div class="text-center space-y-3">
+              <p class="text-sm text-gray-500">Connectez-vous pour finaliser votre commande</p>
+              <a routerLink="/login"
+                 class="block w-full bg-gray-900 text-white font-medium py-3 rounded-lg hover:bg-gray-800 transition-colors">
+                Se connecter
+              </a>
+            </div>
+          }
+        </div>
+  
+      </div>
+    }
+  
+  </div>
