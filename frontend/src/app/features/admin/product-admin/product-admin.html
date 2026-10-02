@@ -1,1 +1,201 @@
-<p>product-admin works!</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Espace administration</h1>
+  
+    @if (error()) {
+      <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-4 py-3 mb-6">
+        {{ error() }}
+      </div>
+    }
+  
+    <div class="flex gap-2 mb-8 border-b border-gray-200">
+      <button (click)="activeTab.set('products')"
+              class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors"
+              [class.border-blue-600]="activeTab() === 'products'"
+              [class.text-blue-600]="activeTab() === 'products'"
+              [class.border-transparent]="activeTab() !== 'products'"
+              [class.text-gray-500]="activeTab() !== 'products'">
+        Produits
+      </button>
+      <button (click)="activeTab.set('categories')"
+              class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors"
+              [class.border-blue-600]="activeTab() === 'categories'"
+              [class.text-blue-600]="activeTab() === 'categories'"
+              [class.border-transparent]="activeTab() !== 'categories'"
+              [class.text-gray-500]="activeTab() !== 'categories'">
+        Catégories
+      </button>
+    </div>
+  
+    @if (loading()) {
+      <p class="text-gray-500">Chargement...</p>
+    } @else {
+  
+      <!-- PRODUITS -->
+      @if (activeTab() === 'products') {
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  
+          <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+                <tr>
+                  <th class="text-left px-4 py-3">Nom</th>
+                  <th class="text-left px-4 py-3">Catégorie</th>
+                  <th class="text-right px-4 py-3">Prix</th>
+                  <th class="text-right px-4 py-3">Stock</th>
+                  <th class="px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                @for (product of products(); track product.id) {
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 font-medium text-gray-900">{{ product.name }}</td>
+                    <td class="px-4 py-3 text-gray-500">{{ product.categoryName }}</td>
+                    <td class="px-4 py-3 text-right text-gray-900">{{ product.price | number:'1.2-2' }} DT</td>
+                    <td class="px-4 py-3 text-right text-gray-500">{{ product.stock }}</td>
+                    <td class="px-4 py-3 text-right whitespace-nowrap">
+                      <button (click)="startEditProduct(product)" class="text-blue-600 hover:underline mr-3">Éditer</button>
+                      <button (click)="deleteProduct(product.id)" class="text-red-500 hover:underline">Suppr.</button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="5" class="text-center py-8 text-gray-400">Aucun produit</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+  
+          <div class="bg-white border border-gray-200 rounded-xl p-6 h-fit">
+            <h2 class="font-semibold text-gray-900 mb-4">
+              {{ editingProductId() ? 'Modifier le produit' : 'Nouveau produit' }}
+            </h2>
+  
+            <form [formGroup]="productForm" (ngSubmit)="submitProduct()" class="space-y-4">
+  
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Nom</label>
+                <input type="text" formControlName="name"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+  
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                <textarea formControlName="description" rows="2"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+              </div>
+  
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Prix (DT)</label>
+                  <input type="number" step="0.01" formControlName="price"
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Stock</label>
+                  <input type="number" formControlName="stock"
+                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+              </div>
+  
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">URL Image</label>
+                <input type="text" formControlName="imageUrl"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+  
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Catégorie</label>
+                <select formControlName="categoryId"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option [value]="0" disabled>Choisir...</option>
+                  @for (cat of categories(); track cat.id) {
+                    <option [value]="cat.id">{{ cat.name }}</option>
+                  }
+                </select>
+              </div>
+  
+              <div class="flex gap-2 pt-2">
+                <button type="submit"
+                        class="flex-1 bg-gray-900 text-white text-sm font-medium py-2.5 rounded-lg hover:bg-blue-600 transition-colors">
+                  {{ editingProductId() ? 'Enregistrer' : 'Créer' }}
+                </button>
+                @if (editingProductId()) {
+                  <button type="button" (click)="cancelEditProduct()"
+                          class="px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700">
+                    Annuler
+                  </button>
+                }
+              </div>
+            </form>
+          </div>
+  
+        </div>
+      }
+  
+      <!-- CATEGORIES -->
+      @if (activeTab() === 'categories') {
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  
+          <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+                <tr>
+                  <th class="text-left px-4 py-3">Nom</th>
+                  <th class="text-left px-4 py-3">Description</th>
+                  <th class="px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                @for (cat of categories(); track cat.id) {
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 font-medium text-gray-900">{{ cat.name }}</td>
+                    <td class="px-4 py-3 text-gray-500">{{ cat.description }}</td>
+                    <td class="px-4 py-3 text-right whitespace-nowrap">
+                      <button (click)="startEditCategory(cat)" class="text-blue-600 hover:underline mr-3">Éditer</button>
+                      <button (click)="deleteCategory(cat.id)" class="text-red-500 hover:underline">Suppr.</button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="3" class="text-center py-8 text-gray-400">Aucune catégorie</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+  
+          <div class="bg-white border border-gray-200 rounded-xl p-6 h-fit">
+            <h2 class="font-semibold text-gray-900 mb-4">
+              {{ editingCategoryId() ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}
+            </h2>
+  
+            <form [formGroup]="categoryForm" (ngSubmit)="submitCategory()" class="space-y-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Nom</label>
+                <input type="text" formControlName="name"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                <textarea formControlName="description" rows="3"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+              </div>
+  
+              <div class="flex gap-2 pt-2">
+                <button type="submit"
+                        class="flex-1 bg-gray-900 text-white text-sm font-medium py-2.5 rounded-lg hover:bg-blue-600 transition-colors">
+                  {{ editingCategoryId() ? 'Enregistrer' : 'Créer' }}
+                </button>
+                @if (editingCategoryId()) {
+                  <button type="button" (click)="cancelEditCategory()"
+                          class="px-4 py-2.5 text-sm text-gray-500 hover:text-gray-700">
+                    Annuler
+                  </button>
+                }
+              </div>
+            </form>
+          </div>
+  
+        </div>
+      }
+    }
+  
+  </div>
